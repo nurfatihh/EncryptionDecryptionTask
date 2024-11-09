@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enkripsi & Dekripsi Sandi</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('assets/bg.jpg'); 
+            background-size: cover; 
+            background-repeat: no-repeat; 
+            background-position: center;
+        }
+
+        /* Form Style */
+        .form-container {
+            background-image: url('assets/bgform1.jpg');
+            background-position: center; 
+            background-size: cover; 
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            text-align: center;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        input[type="radio"] {
+            display: none;
+        }
+
+        label {
+            display: inline-block;
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        input[type="radio"]:checked + label {
+            background-color: #ff0000;
+            color: white;
+        }
+
+        button {
+            background-color: #000000;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px 0;
+        }
+
+        button:hover {
+            background-color: #006e14;
+        }
+
+        .back-button {
+            background-color: #ddd;
+            color: black;
+        }
+
+        .back-button:hover {
+            background-color: #ccc;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+            padding: 10px;
+            border-radius: 4px;
+            display: inline-block; /* To size the background to fit text */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cipher Form -->
+    <div class="form-container">
+        <h2 id="page-title"> Enkripsi & Dekripsi Sandi</h2>
+        <input type="text" id="text-input" placeholder="Masukkan Teks" maxlength="100">
+
+        <!-- Shift Input for Caesar Cipher -->
+        <div id="shift-container">
+            <input type="number" id="shift-input" placeholder="Masukkan Pergeseran (angka)" min="0" max="25">
+        </div>
+
+        <!-- Key Input for Substitution Cipher -->
+        <div id="key-container" style="display: none;">
+            <input type="text" id="key-input" placeholder="Masukkan Kunci (angka)" maxlength="100">
+        </div>
+
+        <!-- Radio buttons for encryption and decryption -->
+        <div>
+            <input type="radio" name="mode" value="encrypt" id="encrypt" checked>
+            <label for="encrypt">Enkripsi</label>
+            <input type="radio" name="mode" value="decrypt" id="decrypt">
+            <label for="decrypt">Dekripsi</label>
+        </div>
+
+        <button onclick="processCipher()">Submit</button>
+
+        <!-- Button to go back to index.html -->
+        <a href="index.html" style="display: block; margin-top: 10px; text-decoration: none;">
+            <button class="back-button">Kembali</button>
+        </a>
+
+        <!-- Result display -->
+        <p id="result"></p>
+    </div>
+
+    <script>
+        // Function to get URL parameter
+        function getParameterByName(name, url = window.location.href) {
+            name = name.replace(/[\[\]]/g, '\\$&');
+            const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        // Update page title based on method parameter
+        const method = getParameterByName('method');
+        if (method === 'geser') {
+            document.title = 'Kode Geser';
+            document.getElementById('page-title').innerText = 'METODE KODE GESER';
+            document.getElementById('shift-container').style.display = 'block';
+            document.getElementById('key-container').style.display = 'none';
+        } else if (method === 'kunci') {
+            document.title = 'Kode Kunci';
+            document.getElementById('page-title').innerText = 'METODE KODE KUNCI';
+            document.getElementById('shift-container').style.display = 'none';
+            document.getElementById('key-container').style.display = 'block';
+        }
+
+        function processCipher() {
+            const text = document.getElementById('text-input').value.toUpperCase();
+            const shift = parseInt(document.getElementById('shift-input').value, 10);
+            const keyInput = document.getElementById('key-input').value;
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            let result = '';
+
+            if (!text) {
+                alert('Masukkan teks!');
+                return;
+            }
+
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+            if (method === 'geser') {
+                // Caesar Cipher logic
+                if (isNaN(shift) || shift < 0 || shift > 25) {
+                    alert('Masukkan pergeseran (0-25)!');
+                    return;
+                }
+
+                for (let i = 0; i < text.length; i++) {
+                    let char = text[i];
+                    if (char.match(/[A-Z]/)) {
+                        let code = text.charCodeAt(i);
+                        if (mode === 'encrypt') {
+                            char = String.fromCharCode(((code - 65 + shift) % 26) + 65);
+                        } else if (mode === 'decrypt') {
+                            char = String.fromCharCode(((code - 65 - shift + 26) % 26) + 65);
+                        }
+                    }
+                    result += char;
+                }
+            } else if (method === 'kunci') {
+                // Substitution Cipher using numeric keys
+                const keyArray = keyInput.split(',').map(Number);
+
+                if (keyArray.some(isNaN)) {
+                    alert('Kunci harus berupa angka');
+                    return;
+                }
+
+                // Repeat key array to match text length
+                const extendedKey = Array.from({ length: text.length }, (_, i) => keyArray[i % keyArray.length]);
+
+                for (let i = 0; i < text.length; i++) {
+                    let textChar = text[i];
+
+                    if (alphabet.includes(textChar)) {
+                        let textIndex = alphabet.indexOf(textChar);
+                        let keyValue = extendedKey[i];
+
+                        if (mode === 'encrypt') {
+                            result += alphabet[(textIndex + keyValue) % 26];
+                        } else if (mode === 'decrypt') {
+                            result += alphabet[(textIndex - keyValue + 26) % 26];
+                        }
+                    } else {
+                        result += textChar; // Non-alphabet characters stay the same
+                    }
+                }
+            }
+
+            document.getElementById('result').innerText = 'Hasil: ' + result;
+        }
+    </script>
+
+</body>
+</html>
